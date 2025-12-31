@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Happy New Year 💖</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #0b1d3a, #000);
+      color: #fff;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .message {
+      display: none;
+      animation: fadeIn 2s ease forwards;
+    }
+
+    .message h1 {
+      font-family: 'Great Vibes', cursive;
+      font-size: 2.6rem;
+      color: #ffb6c1;
+      text-shadow: 0 0 15px rgba(255,182,193,0.7);
+    }
+
+    .message p {
+      margin-top: 14px;
+      font-size: 1.1rem;
+      color: #ddd;
+    }
+
+    .music-btn {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      z-index: 5;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+    }
+
+    .music-btn:hover {
+      background: rgba(255,255,255,0.25);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Fireworks -->
+  <canvas id="fireworks"></canvas>
+
+  <!-- Music -->
+  <button class="music-btn" onclick="toggleMusic()">🎵 Music</button>
+  <audio id="bgMusic" loop>
+    <source src="assets/song.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Message -->
+  <div class="container">
+    <div class="message" id="mainMessage">
+      <h1>Happy New Year mera pyara babu 💗✨</h1>
+      <p>— from Akshat 🫣❤️</p>
+    </div>
+  </div>
+
+  <script>
+    /* MUSIC */
+    const music = document.getElementById("bgMusic");
+    let playing = false;
+
+    function toggleMusic() {
+      if (!playing) {
+        music.play();
+        playing = true;
+      } else {
+        music.pause();
+        playing = false;
+      }
+    }
+
+    /* SHOW MESSAGE AFTER FIREWORKS */
+    setTimeout(() => {
+      document.getElementById("mainMessage").style.display = "block";
+    }, 3500);
+
+    /* FIREWORKS EFFECT */
+    const canvas = document.getElementById("fireworks");
+    const ctx = canvas.getContext("2d");
+    let w, h;
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    const fireworks = [];
+
+    function Firework() {
+      this.x = Math.random() * w;
+      this.y = h;
+      this.targetY = Math.random() * h / 2;
+      this.color = `hsl(${Math.random() * 360},100%,60%)`;
+      this.exploded = false;
+      this.particles = [];
+    }
+
+    Firework.prototype.update = function () {
+      if (!this.exploded) {
+        this.y -= 8;
+        if (this.y <= this.targetY) {
+          this.exploded = true;
+          for (let i = 0; i < 40; i++) {
+            this.particles.push({
+              x: this.x,
+              y: this.y,
+              vx: Math.cos(i) * Math.random() * 4,
+              vy: Math.sin(i) * Math.random() * 4,
+              life: 60
+            });
+          }
+        }
+      }
+    };
+
+    Firework.prototype.draw = function () {
+      if (!this.exploded) {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      } else {
+        this.particles.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.fill();
+        });
+      }
+    };
+
+    function animate() {
+      ctx.clearRect(0, 0, w, h);
+
+      if (Math.random() < 0.05) fireworks.push(new Firework());
+
+      fireworks.forEach((f, i) => {
+        f.update();
+        f.draw();
+
+        if (f.exploded) {
+          f.particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life--;
+          });
+          f.particles = f.particles.filter(p => p.life > 0);
+          if (f.particles.length === 0) fireworks.splice(i, 1);
+        }
+      });
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
+
+</body>
+</html>
